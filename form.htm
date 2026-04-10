@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+
+    <script>
+        function openChatbot() {
+            document.getElementById("chatContainer").style.display = "block";
+
+            const chat = document.getElementById("chat");
+            if (chat.innerHTML === "") {
+                chat.innerHTML += `<p><strong>Chatbot:</strong> Hello! How can I help you? 😊</p>`;
+            }
+        }
+
+        function sendMessage() {
+            const userMessage = document.getElementById("userMessage").value;
+            const chat = document.getElementById("chat");
+
+            if (userMessage.trim() === "") return;
+
+            // Show user message
+            chat.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+            chat.scrollTop = chat.scrollHeight;
+
+            fetch("/form", {   
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: userMessage })
+            })
+            .then(res => res.json())
+            .then(data => {
+                setTimeout(() => {
+                    chat.innerHTML += `<p><strong>Chatbot:</strong> ${data.reply}</p>`;
+                    chat.scrollTop = chat.scrollHeight;
+                }, 500);
+            });
+
+            document.getElementById("userMessage").value = "";
+        }
+
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("userMessage").addEventListener("keypress", function(e) {
+                if (e.key === "Enter") {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #c1cbf6);
+            margin: 0;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 10px 20px;
+        }
+
+        .logo {
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 50px;
+        }
+
+        .nav-links li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 400px;
+            margin: 80px auto;
+            padding: 25px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button {
+            padding: 10px;
+            background: #14814ec3;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #a0b83f;
+        }
+
+        /* Chat styles */
+        #chatContainer {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        #chat {
+            height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">Site</div>
+    <ul class="nav-links">
+        <li><a href="index.htm">Home</a></li>
+        <li><a href="login.htm">Login</a></li>
+        <li><a href="about.htm">About</a></li>
+    </ul>
+</nav>
+
+<hr>
+
+<!-- Chat button -->
+<div style="position: fixed; bottom: 20px; right: 20px;">
+    <button onclick="openChatbot()">Chat with us</button>
+</div>
+
+<!-- Chatbot -->
+<div id="chatContainer">
+
+    <div style="background:#14814ec3; color:white; padding:10px; text-align:center;">
+        Chatbot
+    </div>
+
+    <div id="chat"></div>
+
+    <div style="display:flex; border-top:1px solid #ccc;">
+        <input id="userMessage" type="text" placeholder="Type message..." style="flex:1; padding:10px; border:none;">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+</body>
+</html>
