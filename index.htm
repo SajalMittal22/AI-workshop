@@ -1,26 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register</title>
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    margin: 0;
+}
+
+/* Center card */
+.container {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 30px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* Heading */
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* Input group */
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    font-size: 14px;
+    color: #333;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 5px rgba(102,126,234,0.5);
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #5563c1;
+}
+
+/* small text */
+.note {
+    text-align: center;
+    font-size: 12px;
+    color: gray;
+    margin-top: 10px;
+}
+</style>
+
+<script>
+function validateForm(event) {
+    event.preventDefault();
+
+    const pass = document.getElementById("password").value;
+    const confirm = document.getElementById("confirm-password").value;
+
+    if (pass !== confirm) {
+        alert("❌ Passwords do not match!");
+        return;
+    }
+
+    alert("✅ Registration Successful!");
+}
+</script>
+
 </head>
+
 <body>
-     <h1>Form Page</h1>
-    <form action="submit_form.php" method="POST">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
 
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
+<div class="container">
+    <h1>📝 Register</h1>
 
-        <input type="submit" value="Submit">
+    <form onsubmit="validateForm(event)">
         
+        <div class="input-group">
+            <label>Name</label>
+            <input type="text" placeholder="Enter your name" required>
+        </div>
 
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" placeholder="Enter your email" required>
+        </div>
 
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter password" required>
+        </div>
+
+        <div class="input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="confirm-password" placeholder="Confirm password" required>
+        </div>
+
+        <button type="submit">Create Account</button>
     </form>
 
-    
+    <p class="note">🔒 Your data is safe with us</p>
+</div>
+
 </body>
 </html>

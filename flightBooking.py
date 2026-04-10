@@ -1,66 +1,121 @@
 from flask import Flask, request, jsonify, send_file
+import re
 
 app = Flask(__name__)
 
+user_state = {}
+
 @app.route('/')
 def home():
-    return send_file("form.htm", as_attachment=False)
+    return send_file("form.htm")
 
 @app.route('/form', methods=['POST'])
-def airWays():
+def chatbot():
+    global user_state
+
     data = request.get_json()
     user = data.get("message", "").lower()
 
-    # greetings
-    if any(x in user for x in ["hello", "hey"]):
-        reply = "Hello! 👋 How can I assist you today?"
+    if not user_state:
+        user_state = {
+            "step": "start",
+            "from": "",
+            "to": "",
+            "date": "",
+            "passengers": "",
+            "class": ""
+        }
 
-    # start booking
-    elif "book" in user or "flight" in user:
-        reply = "Sure! Where would you like to travel? ✈️"
+    # START
+    if "book" in user:
+        user_state["step"] = "route"
+        return jsonify({"reply": "✈️ Enter route (e.g., Delhi to Mumbai)"})
 
-    # route detection
-    elif "from" in user and "to" in user:
-        reply = "Great! When would you like to fly?"
+    # ROUTE
+    if user_state["step"] == "route":
+        if "to" in user:
+            try:
+                parts = user.split("to")
+                user_state["from"] = parts[0].strip().title()
+                user_state["to"] = parts[1].strip().title()
+                user_state["step"] = "date"
+                return jsonify({"reply": f"📍 Route: {user_state['from']} ➝ {user_state['to']}\n📅 Enter date (e.g., 12 March 2026)"})
+            except:
+                return jsonify({"reply": "❌ Please enter like: Delhi to Mumbai"})
 
-    # city mention
-    elif any(city in user for city in ["delhi", "mumbai", "chennai", "bangalore", "kolkata"]):
-        reply = "Please provide full route (e.g., Delhi to Mumbai)"
+    # DATE (day + month + year)
+    if user_state["step"] == "date":
+        if re.search(r"\d{1,2}\s+\w+\s+\d{4}", user):
+            user_state["date"] = user.title()
+            user_state["step"] = "passengers"
+            return jsonify({"reply": "👥 How many passengers?"})
+        else:
+            return jsonify({"reply": "❌ Enter full date like: 12 March 2026"})
 
-    # date
-    elif any(x in user for x in ["today", "tomorrow", "next week", "next month"]):
-        reply = "How many passengers will be traveling?"
+    # PASSENGERS
+    if user_state["step"] == "passengers":
+        if user.isdigit():
+            user_state["passengers"] = user
+            user_state["step"] = "class"
+            return jsonify({"reply": "💺 Choose class: Economy / Business / First"})
+        else:
+            return jsonify({"reply": "❌ Enter number of passengers (e.g., 2)"})
 
-    # passengers
-    elif any(x in user for x in ["1", "one", "2", "two", "3", "three"]):
-        reply = "Which class would you prefer? Economy, Business, or First Class?"
+    # CLASS
+    if user_state["step"] == "class":
+        if "economy" in user:
+            price = 50
+            user_state["class"] = "Economy"
+        elif "business" in user:
+            price = 120
+            user_state["class"] = "Business"
+        elif "first" in user:
+            price = 150
+            user_state["class"] = "First"
+        else:
+            return jsonify({"reply": "❌ Choose: Economy / Business / First"})
 
-    # class selection
-    elif "economy" in user:
-        reply = "Economy class selected 💺 Ticket price: $50. Type 'confirm' to proceed."
+        user_state["price"] = price
+        user_state["step"] = "confirm"
 
-    elif "business" in user:
-        reply = "Business class selected 💼 Ticket price: $120. Type 'confirm' to proceed."
+        return jsonify({
+            "reply": f"""
+🧾 BOOKING SUMMARY:
 
-    elif "first" in user:
-        reply = "First Class selected 🛫 Ticket price: $150. Type 'confirm' to proceed."
+✈️ Route: {user_state['from']} ➝ {user_state['to']}
+📅 Date: {user_state['date']}
+👥 Passengers: {user_state['passengers']}
+💺 Class: {user_state['class']}
+💰 Price per ticket: ${price}
+💵 Total: ${int(price) * int(user_state['passengers'])}
 
-    # confirmation
-    elif "confirm" in user:
-        reply = "✅ Booking confirmed! Your ticket has been successfully booked."
+👉 Type 'confirm' to book or 'cancel'
+"""
+        })
 
-    # cancel
-    elif "cancel" in user:
-        reply = "❌ Your booking has been cancelled."
+    # CONFIRM
+    if "confirm" in user:
+        final_details = f"""
+🎉 BOOKING CONFIRMED!
 
-    # help
-    elif "help" in user:
-        reply = "You can say things like 'book a flight', 'Delhi to Mumbai', 'next week', etc."
-    else:
-        reply = "🤔 Sorry, I didn't understand. Try saying 'book a flight'"
+✈️ {user_state['from']} ➝ {user_state['to']}
+📅 {user_state['date']}
+👥 {user_state['passengers']} passengers
+💺 {user_state['class']}
+💰 Total Paid: ${int(user_state['price']) * int(user_state['passengers'])}
 
-    return jsonify({"reply": reply})
+🙏 Thank you for choosing FlyBot!
+"""
 
+        user_state = {}
+        return jsonify({"reply": final_details})
+
+    # CANCEL
+    if "cancel" in user:
+        user_state = {}
+        return jsonify({"reply": "❌ Booking cancelled."})
+
+    return jsonify({"reply": "🤖 Type 'book a flight' to start"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
