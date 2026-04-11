@@ -75,8 +75,7 @@ http://127.0.0.1:5000
 ---
 ## 🎥 Demo Video
 
-[Watch Flybot Demo](./flybot-demo.mp4)
-
+👉 [Click here to watch/download](./flybot-demo.mp4)
 ---
 
 ## 🙌 Author
